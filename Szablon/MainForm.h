@@ -19,17 +19,10 @@ namespace Szablon {
 	public ref class MainForm : public System::Windows::Forms::Form
 	{
 	public:
-		MainForm(void)
-		{
-			InitializeComponent();
-			//
-			//TODO: W tym miejscu dodaj kod konstruktora
-			//
-		}
-
+		MainForm(void);
 	protected:
 		/// <summary>
-		/// Wyczyœæ wszystkie u¿ywane zasoby.
+		/// WyczyÅ›Ä‡ wszystkie uÅ¼ywane zasoby.
 		/// </summary>
 		~MainForm()
 		{
@@ -45,9 +38,7 @@ namespace Szablon {
 	private: System::Windows::Forms::TextBox^ nad_nazwa_gracza;
 	private: System::Windows::Forms::PictureBox^ nazwa_gry;
 
-
-
-	protected:
+	private: void start_Click(System::Object^ sender, System::EventArgs^ e);
 
 	private:
 		/// <summary>
@@ -57,8 +48,8 @@ namespace Szablon {
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
-		/// Metoda wymagana do obs³ugi projektanta — nie nale¿y modyfikowaæ
-		/// jej zawartoœci w edytorze kodu.
+		/// Metoda wymagana do obsÅ‚ugi projektanta â€” nie naleÅ¼y modyfikowaÄ‡
+		/// jej zawartoÅ›ci w edytorze kodu.
 		/// </summary>
 		void InitializeComponent(void)
 		{
@@ -130,12 +121,7 @@ namespace Szablon {
 
 		}
 #pragma endregion
-	private: System::Void start_Click(System::Object^ sender, System::EventArgs^ e) 
-	{
-		Szablon::GameForm^ okno = gcnew Szablon::GameForm();
-		okno->Show(); // pokazuje okno gry
-		this->Hide(); //ukrywa bierzace olkno
-	}
+	
 	private: System::Void MainForm_Load(System::Object^ sender, System::EventArgs^ e) 
 	{
 		this->Load += gcnew System::EventHandler(this, &Szablon::MainForm::MainForm_Load);
@@ -146,3 +132,4 @@ namespace Szablon {
 	}
 	};
 }
+
