@@ -1,5 +1,6 @@
 #pragma once
 #include "HangmanLogic.h"
+#include "User.h"
 
 namespace Szablon {
 
@@ -19,17 +20,21 @@ namespace Szablon {
 	public ref class GameForm : public System::Windows::Forms::Form
 	{
 	public:
-		GameForm(void)
-		{
-			InitializeComponent();
-			zdjecie_bledy->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Zoom;
+		GameForm(User* user);
 
-			//
-			//TODO: W tym miejscu dodaj kod konstruktora
-			//
-		}
+		User* getUser();
+
+	public:
+		//zdjecie_bledy->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Zoom;
+	private:
+		User* user;
+
+		void initName();
+	
 	private: System::Windows::Forms::TextBox^ kto_gra;
 	private: System::Windows::Forms::TextBox^ kto_gra_okno;
+
+
 	private: System::Windows::Forms::PictureBox^ zdjecie_bledy;
 	private: System::Windows::Forms::TextBox^ liczba_zyc;
 	public:
@@ -133,7 +138,6 @@ namespace Szablon {
 			this->liczba_zyc->ReadOnly = true;
 			this->liczba_zyc->Size = System::Drawing::Size(136, 29);
 			this->liczba_zyc->TabIndex = 4;
-			this->liczba_zyc->TextChanged += gcnew System::EventHandler(this, &GameForm::liczba_zyc_TextChanged);
 			// 
 			// kto_gra
 			// 
@@ -145,7 +149,7 @@ namespace Szablon {
 			this->kto_gra->Size = System::Drawing::Size(58, 29);
 			this->kto_gra->TabIndex = 5;
 			this->kto_gra->Text = L"GRA:";
-			this->kto_gra->TextChanged += gcnew System::EventHandler(this, &GameForm::kto_gra_TextChanged);
+	
 			// 
 			// kto_gra_okno
 			// 
@@ -156,17 +160,17 @@ namespace Szablon {
 			this->kto_gra_okno->ReadOnly = true;
 			this->kto_gra_okno->Size = System::Drawing::Size(121, 31);
 			this->kto_gra_okno->TabIndex = 6;
-			this->kto_gra_okno->TextChanged += gcnew System::EventHandler(this, &GameForm::kto_gra_okno_TextChanged);
+	
 			// 
 			// zdjecie_bledy
 			// 
+			this->zdjecie_bledy->BackColor = System::Drawing::SystemColors::Window;
+			this->zdjecie_bledy->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Zoom;
 			this->zdjecie_bledy->Location = System::Drawing::Point(316, 149);
 			this->zdjecie_bledy->Name = L"zdjecie_bledy";
 			this->zdjecie_bledy->Size = System::Drawing::Size(400, 400);
 			this->zdjecie_bledy->TabIndex = 7;
 			this->zdjecie_bledy->TabStop = false;
-			this->zdjecie_bledy->BackgroundImageChanged += gcnew System::EventHandler(this, &GameForm::zdjecie_bledy_BackgroundImageChanged);
-			this->zdjecie_bledy->Click += gcnew System::EventHandler(this, &GameForm::zdjecie_bledy_Click);
 			// 
 			// GameForm
 			// 
@@ -184,16 +188,12 @@ namespace Szablon {
 			this->Controls->Add(this->podpowiedz_);
 			this->Name = L"GameForm";
 			this->Text = L"GameForm";
-			this->Load += gcnew System::EventHandler(this, &GameForm::GameForm_Load);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->zdjecie_bledy))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
 		}
 #pragma endregion
-	private: System::Void GameForm_Load(System::Object^ sender, System::EventArgs^ e) {
-
-	}
 	private: System::Void zgadnij__Click(System::Object^ sender, System::EventArgs^ e) {
 		// Tworzymy ma³e okno dialogowe (Form) do wpisania litery
 		System::Windows::Forms::Form^ dlg = gcnew System::Windows::Forms::Form(); // nowy formularz
@@ -303,16 +303,6 @@ private: System::Void nowa_gra_Click(System::Object^ sender, System::EventArgs^ 
 	this->liczba_zyc->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 	zdjecie_bledy->BackgroundImage = nullptr;
 
-}
-private: System::Void liczba_zyc_TextChanged(System::Object^ sender, System::EventArgs^ e) {
-}
-private: System::Void kto_gra_TextChanged(System::Object^ sender, System::EventArgs^ e) {
-}
-private: System::Void kto_gra_okno_TextChanged(System::Object^ sender, System::EventArgs^ e) {
-}
-private: System::Void zdjecie_bledy_Click(System::Object^ sender, System::EventArgs^ e) {
-}
-private: System::Void zdjecie_bledy_BackgroundImageChanged(System::Object^ sender, System::EventArgs^ e) {
 }
 };
 }

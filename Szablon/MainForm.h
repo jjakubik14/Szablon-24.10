@@ -22,7 +22,7 @@ namespace Szablon {
 		MainForm(void);
 	protected:
 		/// <summary>
-		/// WyczyÅ›Ä‡ wszystkie uÅ¼ywane zasoby.
+		/// Wyczyœæ wszystkie u¿ywane zasoby.
 		/// </summary>
 		~MainForm()
 		{
@@ -48,8 +48,8 @@ namespace Szablon {
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
-		/// Metoda wymagana do obsÅ‚ugi projektanta â€” nie naleÅ¼y modyfikowaÄ‡
-		/// jej zawartoÅ›ci w edytorze kodu.
+		/// Metoda wymagana do obs³ugi projektanta — nie nale¿y modyfikowaæ
+		/// jej zawartoœci w edytorze kodu.
 		/// </summary>
 		void InitializeComponent(void)
 		{
