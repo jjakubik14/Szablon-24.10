@@ -1,148 +1,156 @@
 #include "HangmanLogic.h"
 
-
-
-
-// --- Definicja wbudowanego s³ownika ------
-const char* HangmanLogic::SLOWNIK[] = 
-{    // statyczna tablica wskaznikow
+const char* HangmanLogic::DICTIONARY[] = {
     "KOMPUTER","PROGRAM","INFORMATYKA","POLITECHNIKA",
     "ALGORYTM","GRA","SIEC","HASLO","KLASA",
     "OBIEKT","FUNKCJA","ZMIENNA","DEBUG","KOMPILATOR"
 };
-const int HangmanLogic::SLOWNIK_SIZE = static_cast<int>(sizeof(SLOWNIK) / sizeof(SLOWNIK[0])); // oblicza liczbe el w slowniku
+const int HangmanLogic::DICTIONARY_SIZE =
+static_cast<int>(sizeof(DICTIONARY) / sizeof(DICTIONARY[0]));
 
-// --- Konstruktor =====
-HangmanLogic::HangmanLogic() 
-{       // ustawia stan poczatkowy gry
-    fill(begin(uzyte), end(uzyte), false);  //czysci tablice uzytych liter
-    haslo.clear(); // pusty string z losowym haslem
-    maska.clear();  // pusta maska
-    zycia = 0; //zeruje zycia
-    etap = 0;  // etap rysunku
+HangmanLogic::HangmanLogic() {
+    used_.fill(false);
+    word_.clear();
+    mask_.clear();
+    lives_ = 0;
+    stage_ = 0;
+    hintsUsed_ = 0;
 }
 
-// ----Pomocnicze---
-char HangmanLogic::Norm(char c) {  
+char HangmanLogic::normalizeLetter(char c) {
     unsigned char uc = static_cast<unsigned char>(c);
-    if (isalpha(uc)) {
-        return static_cast<char>(toupper(uc));
+    if (std::isalpha(uc)) {
+        return static_cast<char>(std::toupper(uc));
     }
     return 0;
 }
 
-string HangmanLogic::LosujSlowoZZakresu(int minLen, int maxLen) {    //wybiera slowo
-    // zbierz pasujace
-    vector<string> kandydaci;    // tyczmasowa liczba slow ktora spelnia warunek dlugosci
-    kandydaci.reserve(SLOWNIK_SIZE);
-    for (int i = 0; i < SLOWNIK_SIZE; ++i) {
-        int d = static_cast<int>(strlen(SLOWNIK[i]));
-        if (d >= minLen && d <= maxLen) kandydaci.emplace_back(SLOWNIK[i]);
+std::string HangmanLogic::chooseWordInRange(int minLen, int maxLen) const {
+    std::vector<std::string> candidates;
+    candidates.reserve(DICTIONARY_SIZE);
+    for (int i = 0; i < DICTIONARY_SIZE; ++i) {
+        int d = static_cast<int>(std::strlen(DICTIONARY[i]));
+        if (d >= minLen && d <= maxLen) candidates.emplace_back(DICTIONARY[i]);
     }
 
-    // zrod³o do losowania
-    vector<string> baza;     //baza z ktoej wyslosujemy slowo
-    if (kandydaci.empty()) { //jesli nie bylo slow w podanym zakresie
-        baza.assign(SLOWNIK, SLOWNIK + SLOWNIK_SIZE);  //uzyj calego slownika
+    std::vector<std::string> pool;
+    if (candidates.empty()) {
+        pool.assign(DICTIONARY, DICTIONARY + DICTIONARY_SIZE);
     }
     else {
-        baza = move(kandydaci);  // przenies liste kandydatow do bazy
+        pool = std::move(candidates);
     }
 
-    // losowanie
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<int> dist(0, static_cast<int>(baza.size()) - 1);
-    return baza[dist(gen)];
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dist(0, static_cast<int>(pool.size()) - 1);
+    return pool[dist(gen)];
 }
 
-//------Start gry--------
-void HangmanLogic::NowaGra(int minLen, int maxLen, int zycia_) {
-    haslo = LosujSlowoZZakresu(minLen, maxLen);
-    maska.assign(haslo.size(), '_');
-    zycia = zycia_;
-    etap = 0;
-    fill(begin(uzyte), end(uzyte), false);
+void HangmanLogic::startNewGame(int minLen, int maxLen, int lives) {
+    word_ = chooseWordInRange(minLen, maxLen);
+    mask_.assign(word_.size(), '_');
+    lives_ = lives;
+    stage_ = 0;
+    used_.fill(false);
 }
 
-// ------- rozgrywka ----
-bool HangmanLogic::Zgadnij(char litera) 
-{
-    char L = Norm(litera);
-    if (!L) return false; // nie-litera -pud³o
+bool HangmanLogic::guess(char letter) {
+    char L = normalizeLetter(letter);
+    if (!L) return false;
 
     int idx = L - 'A';
-    if (idx < 0 || idx >= 26) return false;   //jakimœ cudem poza zakresem -odrzuc
+    if (idx < 0 || idx >= 26) return false;
 
-    if (uzyte[idx]) 
-    {
-        // ju¿ byla – nie zmieniaj stanu zwroc czy litera wystêpuje w hasle
-        return haslo.find(L) != string::npos;
+    if (used_[idx]) {
+        return word_.find(L) != std::string::npos;
     }
-    uzyte[idx] = true;
+    used_[idx] = true;
 
-    bool traf = false;
-
-    for (size_t i = 0; i < haslo.size(); ++i) 
-    {
-        if (haslo[i] == L) 
-        {
-            maska[i] = L;
-            traf = true;
+    bool hit = false;
+    for (size_t i = 0; i < word_.size(); ++i) {
+        if (word_[i] == L) {
+            mask_[i] = L;
+            hit = true;
         }
     }
-    if (!traf) 
-    {    // jesli oudlo
-        if (zycia > 0) { zycia--; etap++; } // zabierz zycie
+    if (!hit) {
+        if (lives_ > 0) { lives_--; stage_++; }
     }
-    return traf;
+    return hit;
 }
 
-char HangmanLogic::Podpowiedz() {
-    // pierwsza nieodkryta litera
-    for (size_t i = 0; i < haslo.size(); ++i) {
-        if (maska[i] == '_') {
-            char L = haslo[i];
+char HangmanLogic::hint() {
+    for (size_t i = 0; i < word_.size(); ++i) {
+        if (mask_[i] == '_') {
+            char L = word_[i];
             int idx = L - 'A';
-            if (idx >= 0 && idx < 26) uzyte[idx] = true;
-            maska[i] = L;
+            if (idx >= 0 && idx < 26) used_[idx] = true;
+            mask_[i] = L;
             return L;
         }
     }
     return '\0';
 }
 
-// ----- Odczyty ------
-string HangmanLogic::PobierzMaskowane() const {
-    // np. K _ O M P _ T E R
-    string out;
-    out.reserve(maska.size() * 2);
-    for (size_t i = 0; i < maska.size(); ++i) {
-        out.push_back(maska[i]);
-        if (i + 1 < maska.size()) out.push_back(' ');
+std::string HangmanLogic::getMasked() const {
+    std::string out;
+    out.reserve(mask_.size() * 2);
+    for (size_t i = 0; i < mask_.size(); ++i) {
+        out.push_back(mask_[i]);
+        if (i + 1 < mask_.size()) out.push_back(' ');
     }
     return out;
 }
 
-string HangmanLogic::PobierzUzyteLitery() const {
-    string out;
+std::string HangmanLogic::getUsedLetters() const {
+    std::string out;
     bool any = false;
     for (int i = 0; i < 26; ++i) {
-        if (uzyte[i]) {
+        if (used_[i]) {
             any = true;
             out.push_back(static_cast<char>('A' + i));
             out.push_back(' ');
         }
     }
-    return any ? out : string("-");
+    return any ? out : std::string("-");
 }
 
-bool HangmanLogic::CzyWygrana() const {
-    // wygrana jesli nie ma '_' w masce
-    return maska.find('_') == string::npos;
+int HangmanLogic::getLives() const {
+    return lives_;
 }
 
-bool HangmanLogic::CzyPrzegrana() const {
-    return (zycia <= 0) && !CzyWygrana();
+int HangmanLogic::getStage() const {
+    return stage_;
 }
 
+int HangmanLogic::getHintUsed() const
+{
+    return hintsUsed_;
+}
+void HangmanLogic::incrementHintUsed() {
+    hintsUsed_++;
+}
+void HangmanLogic::setHintUsed(const int amount) {
+    hintsUsed_ = amount;
+}
+
+bool HangmanLogic::isWin() const {
+    return mask_.find('_') == std::string::npos;
+}
+
+bool HangmanLogic::isLoss() const {
+    return (lives_ <= 0) && !isWin();
+}
+
+std::string HangmanLogic::getWord() const {
+    return word_;
+}
+
+void HangmanLogic::setPlayerName(const std::string& name) {
+    playerName_ = name;
+}
+
+const std::string& HangmanLogic::getPlayerName() const {
+    return playerName_;
+}
